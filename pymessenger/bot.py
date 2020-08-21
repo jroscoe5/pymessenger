@@ -6,7 +6,7 @@ from requests_toolbelt import MultipartEncoder
 
 from pymessenger import utils
 
-DEFAULT_API_VERSION = 2.6
+DEFAULT_API_VERSION = 8.0
 
 
 class NotificationType(Enum):
@@ -281,12 +281,13 @@ class Bot:
             params['fields'] = ",".join(fields)
 
         params.update(self.auth_args)
-
         request_endpoint = '{0}/{1}'.format(self.graph_url, recipient_id)
         response = requests.get(request_endpoint, params=params)
         if response.status_code == 200:
-            return response.json()
-
+            if fields is not None and isinstance(fields, (list, tuple)):
+                return { k:response.json()[k] for k in fields }
+            else:
+                return response.json()
         return None
 
     def send_raw(self, payload):
